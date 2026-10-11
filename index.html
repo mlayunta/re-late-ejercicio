@@ -104,7 +104,18 @@
             border-radius: 4px;
         }
         progress { width: 100%; height: 20px; }
-        .chart-container { position: relative; height: 250px; }
+        
+        /* Corrección de superposición: Barra de acciones separada del gráfico */
+        .grafico-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .chart-container { 
+            position: relative; 
+            height: 250px; 
+            margin-bottom: 15px;
+        }
         .filter-buttons { margin-bottom: 15px; display: flex; gap: 5px; flex-wrap: wrap; }
     </style>
 </head>
@@ -184,14 +195,15 @@
                 <progress id="barra-meta" value="0" max="150"></progress>
             </div>
 
+            <!-- Botones colocados antes del gráfico para evitar superposiciones -->
+            <div class="grafico-actions">
+                <button onclick="exportarInformePDF()" class="btn-secondary" style="flex:1;">📄 Informe Médico</button>
+                <button onclick="borrarDatos()" class="btn-danger" style="flex:1;">🗑️ Reiniciar</button>
+            </div>
+
             <div class="chart-container">
                 <h3>Minutos de Ejercicio por Sesión</h3>
                 <canvas id="graficaProgreso"></canvas>
-            </div>
-
-            <div class="action-buttons" style="display:flex; gap:10px; margin-bottom: 15px;">
-                <button onclick="exportarInformePDF()" class="btn-secondary" style="flex:1;">📄 Informe Médico</button>
-                <button onclick="borrarDatos()" class="btn-danger" style="flex:1;">🗑️ Reiniciar</button>
             </div>
 
             <div id="historial-sesiones"></div>
@@ -232,19 +244,13 @@
     </nav>
 
     <script>
-        // Catálogo de Ejercicios Ampliado (Aire Libre, Gimnasio con cinta/pesas y Casa)
         const ejerciciosData = [
-            // Aire Libre
             { id: 1, categoria: "aire-libre", titulo: "Caminata Cardiovascular Suave", duracion: "30 min", intensidad: "Moderada (RPE 3-4)", descripcion: "Caminata continua a ritmo conversacional para activar la circulación.", pasos: ["Calentamiento articular 5 min", "Caminar a ritmo constante sin ahogarse", "Enfriamiento gradual y respiración profunda"], beneficios: "Mejora la salud pulmonar y la resistencia." },
             { id: 2, categoria: "aire-libre", titulo: "Marcha Nórdica con Bastones", duracion: "35 min", intensidad: "Moderada", descripcion: "Uso de bastones para involucrar el tren superior y mejorar la estabilidad.", pasos: ["Ajustar bastones a la altura del codo", "Coordinación brazo-pierna opuesta", "Ritmo constante"], beneficios: "Reduce el impacto en rodillas y moviliza gran masa muscular." },
-            
-            // Gimnasio (Ampliado)
             { id: 3, categoria: "gimnasio", titulo: "Cinta de Correr / Andar con Pendiente Suave", duracion: "20 min", intensidad: "Controlada", descripcion: "Caminata en cinta con ligera inclinación supervisada por frecuencia cardíaca.", pasos: ["Sujetarse a los manillares al subir", "Ajustar velocidad baja-moderada (3-4 km/h)", "Inclinación máxima del 2-3%"], beneficios: "Mejora la resistencia aeróbica controlando el esfuerzo." },
             { id: 4, categoria: "gimnasio", titulo: "Pesas Ligeras: Curl de Bíceps", duracion: "10 min (3x10 reps)", intensidad: "Suave", descripcion: "Trabajo de fuerza para brazos utilizando mancuernas de poco peso.", pasos: ["Sentado en banco con espalda recta", "Sostener mancuernas ligeras", "Flexionar los codos controladamente sin arquear la espalda"], beneficios: "Mantiene la masa muscular y fuerza en el tren superior." },
             { id: 5, categoria: "gimnasio", titulo: "Prensa de Piernas Horizontal", duracion: "15 min (3x10 reps)", intensidad: "Controlada", descripcion: "Ejercicio guiado de fuerza para piernas en máquina segura.", pasos: ["Colocar los pies firmes en la plataforma", "Empujar controladamente sin bloquear las rodillas", "Regresar despacio"], beneficios: "Fortalece cuádriceps y glúteos protegiendo la columna." },
             { id: 6, categoria: "gimnasio", titulo: "Remo Sentado en Máquina", duracion: "12 min (3x10 reps)", intensidad: "Moderada", descripcion: "Fortalecimiento de la espalda alta mediante polea guiada.", pasos: ["Ajustar el apoyo del pecho", "Tirar de los manerales contrayendo los omóplatos", "Retornar de forma controlada"], beneficios: "Mejora la postura y fortalece la parte superior de la espalda." },
-
-            // Casa
             { id: 7, categoria: "casa", titulo: "Sentadillas en Silla (Chair Stands)", duracion: "10 min (3x10 reps)", intensidad: "Suave", descripcion: "Levantarse y sentarse de una silla firme para ganar fuerza funcional.", pasos: ["Sentarse con la espalda recta y pies separados", "Incorporarse usando la fuerza de las piernas", "Sentarse lentamente de forma controlada"], beneficios: "Previene la pérdida de masa muscular y evita caídas cotidianas." },
             { id: 8, categoria: "casa", titulo: "Flexiones de Pared", duracion: "8 min (3x8 reps)", intensidad: "Suave", descripcion: "Empujes contra la pared para trabajar pectoral y brazos con total seguridad.", pasos: ["Colocar manos en la pared a la altura del pecho", "Flexionar los codos acercando el cuerpo", "Empujar para volver a la posición inicial"], beneficios: "Fortalece brazos y pecho sin sobrecargar articulaciones." }
         ];
