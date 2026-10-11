@@ -157,21 +157,22 @@
         progress::-webkit-progress-bar { background-color: #e2e8f0; border-radius: 8px; }
         progress::-webkit-progress-value { background-color: var(--accent); border-radius: 8px; }
 
-        /* Corrección de gráficos y layout móvil para evitar solapamientos */
         .grafico-actions {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
+        /* Altura fija y espacio interno adecuado para que la gráfica encaje perfectamente */
         .chart-container { 
             position: relative; 
-            height: 280px; 
+            height: 320px; 
             width: 100%;
             margin-bottom: 25px;
+            padding-bottom: 10px;
         }
         .filter-buttons { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
         h2 { color: var(--primary); font-size: 20px; margin-top: 0; }
-        h3 { color: var(--secondary); font-size: 16px; }
+        h3 { color: var(--secondary); font-size: 16px; margin-bottom: 15px; }
         #historial-sesiones { margin-top: 20px; }
         .historial-item {
             background: #f8fafc;
@@ -268,7 +269,6 @@
                 <progress id="barra-meta" value="0" max="150"></progress>
             </div>
 
-            <!-- Botones de acción organizados -->
             <div class="grafico-actions">
                 <button onclick="exportarInformePDF()" class="btn-secondary" style="flex:1;">📄 Informe Médico</button>
                 <button onclick="borrarDatos()" class="btn-danger" style="flex:1;">🗑️ Reiniciar</button>
@@ -279,7 +279,7 @@
                 <canvas id="graficaProgreso"></canvas>
             </div>
 
-            <div class="chart-container" style="margin-top: 40px;">
+            <div class="chart-container" style="margin-top: 30px;">
                 <h3>Evolución del Perímetro Abdominal (cm)</h3>
                 <canvas id="graficaAbdominal"></canvas>
             </div>
@@ -353,7 +353,7 @@
             document.getElementById(`tab-${nombreTab}`).classList.add('active');
             event.currentTarget.classList.add('active');
             if(nombreTab === 'progreso' || nombreTab === 'salud') {
-                setTimeout(() => actualizarGraficas(), 100); // Pequeño retardo para asegurar renderizado correcto en móvil
+                setTimeout(() => actualizarGraficas(), 100);
             }
         }
 
@@ -440,6 +440,14 @@
         }
 
         function inicializarGraficas() {
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { bottom: 5, top: 5 }
+                }
+            };
+
             const ctxSalud = document.getElementById('graficaSalud').getContext('2d');
             chartSaludInstance = new Chart(ctxSalud, {
                 type: 'line',
@@ -447,21 +455,21 @@
                     { label: 'Pulso Pre (BPM)', data: [], borderColor: '#e63946', backgroundColor: '#e63946', tension: 0.1, fill: false },
                     { label: 'Pulso Post (BPM)', data: [], borderColor: '#457b9d', backgroundColor: '#457b9d', tension: 0.1, fill: false }
                 ]},
-                options: { responsive: true, maintainAspectRatio: false }
+                options: commonOptions
             });
 
             const ctxProgreso = document.getElementById('graficaProgreso').getContext('2d');
             chartProgresoInstance = new Chart(ctxProgreso, {
                 type: 'bar',
                 data: { labels: [], datasets: [{ label: 'Minutos por Sesión', data: [], backgroundColor: '#2a9d8f' }]},
-                options: { responsive: true, maintainAspectRatio: false }
+                options: commonOptions
             });
 
             const ctxAbdominal = document.getElementById('graficaAbdominal').getContext('2d');
             chartAbdominalInstance = new Chart(ctxAbdominal, {
                 type: 'line',
                 data: { labels: [], datasets: [{ label: 'Perímetro Abdominal (cm)', data: [], borderColor: '#e76f51', backgroundColor: '#e76f51', tension: 0.1, fill: false }]},
-                options: { responsive: true, maintainAspectRatio: false }
+                options: commonOptions
             });
 
             actualizarGraficas();
