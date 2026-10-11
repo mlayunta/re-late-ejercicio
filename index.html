@@ -25,7 +25,7 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
-            padding-bottom: 110px; /* Margen amplio para evitar que el menú tape el contenido */
+            padding-bottom: 110px;
         }
         header {
             background: linear-gradient(135deg, #1d3557, #457b9d);
@@ -95,14 +95,13 @@
         .btn-secondary { background-color: var(--secondary); color: white; }
         .btn-danger { background-color: var(--danger); color: white; }
         
-        .exercise-card, .consejo-card, .stats-box, .home-card, .chart-card {
+        .exercise-card, .consejo-card, .stats-box, .home-card {
             background: var(--bg-card);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 25px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
             border: 1px solid rgba(0,0,0,0.05);
-            overflow: hidden;
         }
         .home-card {
             text-align: center;
@@ -161,20 +160,22 @@
         .grafico-actions {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
-        /* Contenedor estricto para evitar encuadres cortados en móviles */
-        .chart-wrapper { 
-            position: relative; 
-            width: 100%;
-            height: 240px; 
+        /* Bloque de gráfica sin tarjetas ni bordes */
+        .bloque-grafica {
+            margin-bottom: 35px;
+        }
+        .bloque-grafica canvas {
+            max-height: 250px;
+            width: 100% !important;
         }
 
         .filter-buttons { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
         h2 { color: var(--primary); font-size: 20px; margin-top: 0; }
-        h3 { color: var(--secondary); font-size: 16px; margin-top: 0; margin-bottom: 15px; }
-        #historial-sesiones { margin-top: 20px; }
+        h3 { color: var(--secondary); font-size: 16px; margin-top: 0; margin-bottom: 10px; }
+        #historial-sesiones { margin-top: 25px; }
         .historial-item {
             background: #f8fafc;
             padding: 10px 15px;
@@ -256,11 +257,9 @@
                 <button type="submit" class="btn-primary">Registrar Control de Salud</button>
             </form>
 
-            <div class="chart-card" style="margin-top: 25px;">
+            <div class="bloque-grafica" style="margin-top: 30px;">
                 <h3>Evolución de Pulsaciones (Pre vs Post)</h3>
-                <div class="chart-wrapper">
-                    <canvas id="graficaSalud"></canvas>
-                </div>
+                <canvas id="graficaSalud"></canvas>
             </div>
         </section>
 
@@ -277,18 +276,14 @@
                 <button onclick="borrarDatos()" class="btn-danger" style="flex:1;">🗑️ Reiniciar</button>
             </div>
 
-            <div class="chart-card">
+            <div class="bloque-grafica">
                 <h3>Minutos de Ejercicio por Sesión</h3>
-                <div class="chart-wrapper">
-                    <canvas id="graficaProgreso"></canvas>
-                </div>
+                <canvas id="graficaProgreso"></canvas>
             </div>
 
-            <div class="chart-card">
+            <div class="bloque-grafica">
                 <h3>Evolución del Perímetro Abdominal (cm)</h3>
-                <div class="chart-wrapper">
-                    <canvas id="graficaAbdominal"></canvas>
-                </div>
+                <canvas id="graficaAbdominal"></canvas>
             </div>
 
             <div id="historial-sesiones"></div>
@@ -449,7 +444,8 @@
         function inicializarGraficas() {
             const commonOptions = {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
+                aspectRatio: 1.6,
                 plugins: {
                     legend: { position: 'top' }
                 }
