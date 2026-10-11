@@ -95,7 +95,7 @@
         .btn-secondary { background-color: var(--secondary); color: white; }
         .btn-danger { background-color: var(--danger); color: white; }
         
-        .exercise-card, .consejo-card, .stats-box, .chart-container, .home-card {
+        .exercise-card, .consejo-card, .stats-box, .home-card {
             background: var(--bg-card);
             padding: 20px;
             border-radius: 12px;
@@ -162,13 +162,16 @@
             gap: 10px;
             margin-bottom: 15px;
         }
-        /* Altura fija y espacio interno adecuado para que la gráfica encaje perfectamente */
+        /* Contenedor sin fondo ni bordes para que la gráfica respire perfectamente */
         .chart-container { 
             position: relative; 
-            height: 320px; 
+            height: 300px; 
             width: 100%;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
+            margin-bottom: 30px;
+            background: transparent;
+            box-shadow: none;
+            border: none;
+            padding: 0;
         }
         .filter-buttons { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
         h2 { color: var(--primary); font-size: 20px; margin-top: 0; }
@@ -279,7 +282,7 @@
                 <canvas id="graficaProgreso"></canvas>
             </div>
 
-            <div class="chart-container" style="margin-top: 30px;">
+            <div class="chart-container" style="margin-top: 20px;">
                 <h3>Evolución del Perímetro Abdominal (cm)</h3>
                 <canvas id="graficaAbdominal"></canvas>
             </div>
@@ -442,10 +445,7 @@
         function inicializarGraficas() {
             const commonOptions = {
                 responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: { bottom: 5, top: 5 }
-                }
+                maintainAspectRatio: false
             };
 
             const ctxSalud = document.getElementById('graficaSalud').getContext('2d');
