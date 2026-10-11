@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re-Late-Ejercicio</title>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1d3557">
+    <!-- Librería Chart.js para gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding-bottom: 80px;
+        }
+        header {
+            background-color: #1d3557;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+        main {
+            padding: 15px;
+            max-width: 800px;
+            margin: auto;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #ccc;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+        .nav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #666;
+        }
+        .nav-btn.active {
+            color: #1d3557;
+            font-weight: bold;
+        }
+        .btn-filter, .btn-primary, .btn-secondary, .btn-danger {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-filter.active { background-color: #1d3557; color: white; }
+        .btn-primary { background-color: #2a9d8f; color: white; width: 100%; margin-top: 10px; }
+        .btn-secondary { background-color: #457b9d; color: white; }
+        .btn-danger { background-color: #e63946; color: white; }
+        .exercise-card, .consejo-card, .stats-box, .chart-container, .home-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .home-card {
+            text-align: center;
+            padding: 25px;
+        }
+        .heart-logo {
+            font-size: 60px;
+            color: #e63946;
+            margin-bottom: 10px;
+        }
+        .disclaimer-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+            text-align: left;
+        }
+        .form-row { display: flex; gap: 10px; }
+        .form-group { flex: 1; margin-bottom: 10px; }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        progress { width: 100%; height: 20px; }
+        .chart-container { position: relative; height: 250px; }
+        .filter-buttons { margin-bottom: 15px; display: flex; gap: 5px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>❤️ Re-Late-Ejercicio</h1>
+        <p>Salud cardiovascular y bienestar</p>
+    </header>
+
+    <main id="app-container">
+        <!-- PESTAÑA 0: INICIO / BIENVENIDA -->
+        <section id="tab-inicio" class="tab-content active">
+            <div class="home-card">
+                <div class="heart-logo">❤️</div>
+                <h2>Re-Late-Ejercicio</h2>
+                <p><strong>Autor:</strong> Miguel Ángel Layunta López</p>
+                <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                <p>Bienvenido a tu aplicación de seguimiento de ejercicio físico adaptado y control de salud cardiovascular, diseñada para acompañarte en tus rutinas diarias de forma segura.</p>
+                
+                <div class="disclaimer-box">
+                    <strong>⚠️ Aviso Médico Importante:</strong><br>
+                    Esta App no sustituye las prescripciones de médicos, fisioterapeutas u otros profesionales cualificados. Consulte siempre con su especialista antes de iniciar cualquier actividad física.
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 1: EJERCICIO -->
+        <section id="tab-ejercicio" class="tab-content">
+            <h2>Ejercicios Cardioprotegidos</h2>
+            <div class="filter-buttons">
+                <button onclick="filtrarEjercicios('todos')" class="btn-filter active">Todos</button>
+                <button onclick="filtrarEjercicios('aire-libre')" class="btn-filter">Aire Libre</button>
+                <button onclick="filtrarEjercicios('gimnasio')" class="btn-filter">Gimnasio</button>
+                <button onclick="filtrarEjercicios('casa')" class="btn-filter">En Casa</button>
+            </div>
+            <div id="lista-ejercicios" class="exercises-grid"></div>
+        </section>
+
+        <!-- PESTAÑA 2: SALUD -->
+        <section id="tab-salud" class="tab-content">
+            <h2>Control de Salud (Antes y Después)</h2>
+            <form id="form-salud" onsubmit="guardarRegistroSalud(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pulso Pre (BPM):</label>
+                        <input type="number" id="pulso-pre" required placeholder="Ej: 72">
+                    </div>
+                    <div class="form-group">
+                        <label>Pulso Post (BPM):</label>
+                        <input type="number" id="pulso-post" required placeholder="Ej: 95">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tensión Pre (Sis/Dias):</label>
+                        <input type="text" id="tension-pre" required placeholder="Ej: 120/80">
+                    </div>
+                    <div class="form-group">
+                        <label>Glucemia (mg/dL):</label>
+                        <input type="number" id="glucemia" placeholder="Ej: 105">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Registrar Control de Salud</button>
+            </form>
+
+            <div class="chart-container" style="margin-top: 20px;">
+                <h3>Evolución de Pulsaciones (Pre vs Post)</h3>
+                <canvas id="graficaSalud"></canvas>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 3: PROGRESO -->
+        <section id="tab-progreso" class="tab-content">
+            <h2>Tu Progreso y Metas</h2>
+            <div class="stats-box">
+                <p>Minutos acumulados: <strong id="minutos-acumulados">0</strong> / 150 min (OMS)</p>
+                <progress id="barra-meta" value="0" max="150"></progress>
+            </div>
+
+            <div class="chart-container">
+                <h3>Minutos de Ejercicio por Sesión</h3>
+                <canvas id="graficaProgreso"></canvas>
+            </div>
+
+            <div class="action-buttons" style="display:flex; gap:10px; margin-bottom: 15px;">
+                <button onclick="exportarInformePDF()" class="btn-secondary" style="flex:1;">📄 Informe Médico</button>
+                <button onclick="borrarDatos()" class="btn-danger" style="flex:1;">🗑️ Reiniciar</button>
+            </div>
+
+            <div id="historial-sesiones"></div>
+        </section>
+
+        <!-- PESTAÑA 4: CONSEJOS -->
+        <section id="tab-consejos" class="tab-content">
+            <h2>Consejos de Salud Cardiovascular</h2>
+            <div class="consejo-card">
+                <h3>🚨 Cuándo detener el ejercicio de inmediato</h3>
+                <p>Detente inmediatamente si experimentas opresión en el pecho, mareos intensos, falta de aire desproporcionada o sudoración fría. Consulta con tu médico si persisten los síntomas.</p>
+            </div>
+            <div class="consejo-card">
+                <h3>💧 Hidratación Constante</h3>
+                <p>Bebe pequeños sorbos de agua antes, durante y después de la actividad física, incluso si no notas sensación de sed directa.</p>
+            </div>
+            <div class="consejo-card">
+                <h3>🥗 Nutrición Cardioprotectora</h3>
+                <p>Prioriza la dieta mediterránea rica en verduras, frutas, legumbres, pescado azul y aceite de oliva virgen extra. Reduce el consumo de sal y grasas saturadas.</p>
+            </div>
+            <div class="consejo-card">
+                <h3>🧘 Gestión del Estrés y Bienestar</h3>
+                <p>Dedica unos minutos al día a realizar respiraciones profundas y controladas. El descanso nocturno adecuado (7-8 horas) es vital para la recuperación cardíaca.</p>
+            </div>
+            <div class="consejo-card">
+                <h3>🌡️ Control Ambiental</h3>
+                <p>Evita hacer ejercicio al aire libre en las horas centrales del día durante los meses de calor extremo, y cúbrete adecuadamente en invierno.</p>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <button onclick="cambiarPestaña('inicio')" class="nav-btn active">🏠 Inicio</button>
+        <button onclick="cambiarPestaña('ejercicio')" class="nav-btn">🏋️ Ejercicio</button>
+        <button onclick="cambiarPestaña('salud')" class="nav-btn">🩺 Salud</button>
+        <button onclick="cambiarPestaña('progreso')" class="nav-btn">📊 Progreso</button>
+        <button onclick="cambiarPestaña('consejos')" class="nav-btn">💡 Consejos</button>
+    </nav>
+
+    <script>
+        // Catálogo de Ejercicios Ampliado (Aire Libre, Gimnasio con cinta/pesas y Casa)
+        const ejerciciosData = [
+            // Aire Libre
+            { id: 1, categoria: "aire-libre", titulo: "Caminata Cardiovascular Suave", duracion: "30 min", intensidad: "Moderada (RPE 3-4)", descripcion: "Caminata continua a ritmo conversacional para activar la circulación.", pasos: ["Calentamiento articular 5 min", "Caminar a ritmo constante sin ahogarse", "Enfriamiento gradual y respiración profunda"], beneficios: "Mejora la salud pulmonar y la resistencia." },
+            { id: 2, categoria: "aire-libre", titulo: "Marcha Nórdica con Bastones", duracion: "35 min", intensidad: "Moderada", descripcion: "Uso de bastones para involucrar el tren superior y mejorar la estabilidad.", pasos: ["Ajustar bastones a la altura del codo", "Coordinación brazo-pierna opuesta", "Ritmo constante"], beneficios: "Reduce el impacto en rodillas y moviliza gran masa muscular." },
+            
+            // Gimnasio (Ampliado)
+            { id: 3, categoria: "gimnasio", titulo: "Cinta de Correr / Andar con Pendiente Suave", duracion: "20 min", intensidad: "Controlada", descripcion: "Caminata en cinta con ligera inclinación supervisada por frecuencia cardíaca.", pasos: ["Sujetarse a los manillares al subir", "Ajustar velocidad baja-moderada (3-4 km/h)", "Inclinación máxima del 2-3%"], beneficios: "Mejora la resistencia aeróbica controlando el esfuerzo." },
+            { id: 4, categoria: "gimnasio", titulo: "Pesas Ligeras: Curl de Bíceps", duracion: "10 min (3x10 reps)", intensidad: "Suave", descripcion: "Trabajo de fuerza para brazos utilizando mancuernas de poco peso.", pasos: ["Sentado en banco con espalda recta", "Sostener mancuernas ligeras", "Flexionar los codos controladamente sin arquear la espalda"], beneficios: "Mantiene la masa muscular y fuerza en el tren superior." },
+            { id: 5, categoria: "gimnasio", titulo: "Prensa de Piernas Horizontal", duracion: "15 min (3x10 reps)", intensidad: "Controlada", descripcion: "Ejercicio guiado de fuerza para piernas en máquina segura.", pasos: ["Colocar los pies firmes en la plataforma", "Empujar controladamente sin bloquear las rodillas", "Regresar despacio"], beneficios: "Fortalece cuádriceps y glúteos protegiendo la columna." },
+            { id: 6, categoria: "gimnasio", titulo: "Remo Sentado en Máquina", duracion: "12 min (3x10 reps)", intensidad: "Moderada", descripcion: "Fortalecimiento de la espalda alta mediante polea guiada.", pasos: ["Ajustar el apoyo del pecho", "Tirar de los manerales contrayendo los omóplatos", "Retornar de forma controlada"], beneficios: "Mejora la postura y fortalece la parte superior de la espalda." },
+
+            // Casa
+            { id: 7, categoria: "casa", titulo: "Sentadillas en Silla (Chair Stands)", duracion: "10 min (3x10 reps)", intensidad: "Suave", descripcion: "Levantarse y sentarse de una silla firme para ganar fuerza funcional.", pasos: ["Sentarse con la espalda recta y pies separados", "Incorporarse usando la fuerza de las piernas", "Sentarse lentamente de forma controlada"], beneficios: "Previene la pérdida de masa muscular y evita caídas cotidianas." },
+            { id: 8, categoria: "casa", titulo: "Flexiones de Pared", duracion: "8 min (3x8 reps)", intensidad: "Suave", descripcion: "Empujes contra la pared para trabajar pectoral y brazos con total seguridad.", pasos: ["Colocar manos en la pared a la altura del pecho", "Flexionar los codos acercando el cuerpo", "Empujar para volver a la posición inicial"], beneficios: "Fortalece brazos y pecho sin sobrecargar articulaciones." }
+        ];
+
+        let chartSaludInstance = null;
+        let chartProgresoInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderizarEjercicios(ejerciciosData);
+            actualizarProgresoUI();
+            inicializarGraficas();
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js').catch(err => console.log('Error SW:', err));
+            }
+        });
+
+        function cambiarPestaña(nombreTab) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${nombreTab}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(nombreTab === 'progreso' || nombreTab === 'salud') actualizarGraficas();
+        }
+
+        function filtrarEjercicios(categoria) {
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            if (categoria === 'todos') renderizarEjercicios(ejerciciosData);
+            else renderizarEjercicios(ejerciciosData.filter(ex => ex.categoria === categoria));
+        }
+
+        function renderizarEjercicios(lista) {
+            const contenedor = document.getElementById('lista-ejercicios');
+            contenedor.innerHTML = "";
+            lista.forEach(ex => {
+                const tarjeta = document.createElement('div');
+                tarjeta.className = 'exercise-card';
+                tarjeta.innerHTML = `
+                    <h3>${ex.titulo}</h3>
+                    <p><strong>Duración:</strong> ${ex.duracion} | <strong>Intensidad:</strong> ${ex.intensidad}</p>
+                    <p>${ex.descripcion}</p>
+                    <button class="btn-secondary" onclick="toggleDetalles(${ex.id})">Ver Explicación y Pasos</button>
+                    <div id="detalles-${ex.id}" style="display:none; margin-top:10px;">
+                        <h4>Pasos a seguir:</h4>
+                        <ul>${ex.pasos.map(p => `<li>${p}</li>`).join('')}</ul>
+                        <p><strong>Beneficio:</strong> ${ex.beneficios}</p>
+                        <button class="btn-primary" onclick="registrarEntrenamiento('${ex.titulo}', 20)">✅ Marcar Realizado (+20 min)</button>
+                    </div>
+                `;
+                contenedor.appendChild(tarjeta);
+            });
+        }
+
+        function toggleDetalles(id) {
+            const el = document.getElementById(`detalles-${id}`);
+            el.style.display = el.style.display === "none" ? "block" : "none";
+        }
+
+        function guardarRegistroSalud(e) {
+            e.preventDefault();
+            const pulsoPre = parseInt(document.getElementById('pulso-pre').value);
+            const pulsoPost = parseInt(document.getElementById('pulso-post').value);
+            const tensionPre = document.getElementById('tension-pre').value;
+            const glucemia = document.getElementById('glucemia').value;
+
+            let registros = JSON.parse(localStorage.getItem('registros_salud')) || [];
+            registros.push({ fecha: new Date().toLocaleDateString(), pulsoPre, pulsoPost, tensionPre, glucemia });
+            localStorage.setItem('registros_salud', JSON.stringify(registros));
+            
+            alert('¡Control de salud guardado con éxito!');
+            document.getElementById('form-salud').reset();
+            actualizarGraficas();
+        }
+
+        function registrarEntrenamiento(titulo, minutos) {
+            let historial = JSON.parse(localStorage.getItem('historial_ejercicios')) || [];
+            let totalMin = parseInt(localStorage.getItem('minutos_totales')) || 0;
+            totalMin += minutos;
+            historial.push({ titulo, minutos, fecha: new Date().toLocaleDateString() });
+
+            localStorage.setItem('minutos_totales', totalMin);
+            localStorage.setItem('historial_ejercicios', JSON.stringify(historial));
+            alert(`¡Entrenamiento registrado! Se han sumado ${minutos} minutos.`);
+            actualizarProgresoUI();
+            actualizarGraficas();
+        }
+
+        function actualizarProgresoUI() {
+            const totalMin = parseInt(localStorage.getItem('minutos_totales')) || 0;
+            document.getElementById('minutos-acumulados').innerText = totalMin;
+            document.getElementById('barra-meta').value = totalMin;
+
+            const historial = JSON.parse(localStorage.getItem('historial_ejercicios')) || [];
+            document.getElementById('historial-sesiones').innerHTML = "<h3>Historial Reciente</h3>" + 
+                (historial.length === 0 ? "<p>Aún no hay sesiones registradas.</p>" : 
+                historial.map(s => `<p>✅ ${s.fecha} - <strong>${s.titulo}</strong> (${s.minutos} min)</p>`).join(''));
+        }
+
+        function inicializarGraficas() {
+            const ctxSalud = document.getElementById('graficaSalud').getContext('2d');
+            chartSaludInstance = new Chart(ctxSalud, {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Pulso Pre (BPM)', data: [], borderColor: '#e63946', tension: 0.1 },
+                    { label: 'Pulso Post (BPM)', data: [], borderColor: '#457b9d', tension: 0.1 }
+                ]},
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const ctxProgreso = document.getElementById('graficaProgreso').getContext('2d');
+            chartProgresoInstance = new Chart(ctxProgreso, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Minutos por Sesión', data: [], backgroundColor: '#2a9d8f' }]},
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            actualizarGraficas();
+        }
+
+        function actualizarGraficas() {
+            const reg = JSON.parse(localStorage.getItem('registros_salud')) || [];
+            if (chartSaludInstance) {
+                chartSaludInstance.data.labels = reg.map(r => r.fecha);
+                chartSaludInstance.data.datasets[0].data = reg.map(r => r.pulsoPre);
+                chartSaludInstance.data.datasets[1].data = reg.map(r => r.pulsoPost);
+                chartSaludInstance.update();
+            }
+            const hist = JSON.parse(localStorage.getItem('historial_ejercicios')) || [];
+            if (chartProgresoInstance) {
+                chartProgresoInstance.data.labels = hist.map(h => h.fecha);
+                chartProgresoInstance.data.datasets[0].data = hist.map(h => h.minutos);
+                chartProgresoInstance.update();
+            }
+        }
+
+        function exportarInformePDF() { alert("Generando resumen médico estructurado para el especialista..."); }
+        function borrarDatos() {
+            if (confirm("¿Estás seguro de reiniciar todos los datos y registros de la aplicación?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
