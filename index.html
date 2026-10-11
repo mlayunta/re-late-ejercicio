@@ -15,6 +15,7 @@
             --secondary: #457b9d;
             --accent: #2a9d8f;
             --danger: #e63946;
+            --warning: #f4a261;
             --bg-main: #f0f4f8;
             --bg-card: #ffffff;
             --text-main: #2b2d42;
@@ -130,6 +131,16 @@
             line-height: 1.5;
             text-align: left;
         }
+        .limits-info-box {
+            background-color: #e8f4f8;
+            border: 1px solid #bbeeec;
+            color: #1d3557;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
         .form-row { display: flex; gap: 12px; }
         .form-group { flex: 1; margin-bottom: 12px; }
         label {
@@ -162,8 +173,6 @@
             gap: 10px;
             margin-bottom: 25px;
         }
-
-        /* Bloque de gráfica sin tarjetas ni bordes */
         .bloque-grafica {
             margin-bottom: 35px;
         }
@@ -200,7 +209,7 @@
                 <h2>Re-Late-Ejercicio</h2>
                 <p style="color: var(--text-muted); font-size: 14px;"><strong>Autor:</strong> Miguel Ángel Layunta López</p>
                 <hr style="border:0; border-top:1px solid #e2e8f0; margin:20px 0;">
-                <p style="line-height: 1.6;">Bienvenido a tu aplicación de seguimiento de ejercicio físico adaptado y control de salud cardiovascular, diseñada para acompañarte en tus rutinas diarias de forma segura.</p>
+                <p style="line-height: 1.6;">Herramienta vital de seguimiento de ejercicio físico adaptado y control de salud cardiovascular para asociaciones de rehabilitación cardíaca.</p>
                 
                 <div class="disclaimer-box">
                     <strong>⚠️ Aviso Médico Importante:</strong><br>
@@ -224,10 +233,24 @@
         <!-- PESTAÑA 2: SALUD -->
         <section id="tab-salud" class="tab-content">
             <h2>Control de Salud (Antes y Después)</h2>
-            <div class="exercise-card" style="background: #f8fafc; margin-bottom: 20px;">
-                <p style="margin:0; font-size: 13px; color: var(--text-muted);">Registra tus constantes antes y después de cada sesión de entrenamiento para mantener un control seguro.</p>
+            
+            <div class="limits-info-box">
+                <strong>💡 Límites de Alerta Clínica:</strong><br>
+                • <strong>Glucemia:</strong> Peligro bajo < 70 mg/dL | Peligro alto > 250 mg/dL (Normal en ayunas: 70-100)<br>
+                • <strong>Tensión Arterial:</strong> Hipotensión < 90/60 mmHg | Hipertensión crítica > 140/90 mmHg (Normal: < 120/80)
             </div>
+
             <form id="form-salud" onsubmit="guardarRegistroSalud(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Edad (Años):</label>
+                        <input type="number" id="edad" required placeholder="Ej: 65">
+                    </div>
+                    <div class="form-group">
+                        <label>Peso (kg):</label>
+                        <input type="number" step="0.1" id="peso" required placeholder="Ej: 75.5">
+                    </div>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Pulso Pre (BPM):</label>
@@ -279,6 +302,11 @@
             <div class="bloque-grafica">
                 <h3>Minutos de Ejercicio por Sesión</h3>
                 <canvas id="graficaProgreso"></canvas>
+            </div>
+
+            <div class="bloque-grafica">
+                <h3>Evolución del Peso Corporal (kg)</h3>
+                <canvas id="graficaPeso"></canvas>
             </div>
 
             <div class="bloque-grafica">
@@ -337,6 +365,7 @@
 
         let chartSaludInstance = null;
         let chartProgresoInstance = null;
+        let chartPesoInstance = null;
         let chartAbdominalInstance = null;
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -395,15 +424,38 @@
 
         function guardarRegistroSalud(e) {
             e.preventDefault();
+            const edad = parseInt(document.getElementById('edad').value);
+            const peso = parseFloat(document.getElementById('peso').value);
             const pulsoPre = parseInt(document.getElementById('pulso-pre').value);
             const pulsoPost = parseInt(document.getElementById('pulso-post').value);
             const tensionPre = document.getElementById('tension-pre').value;
             const glucemia = document.getElementById('glucemia').value;
             const perimetroAbdominal = document.getElementById('perimetro-abdominal').value;
 
+            // Validación de límites peligrosos para advertir al usuario
+            let alertas = [];
+            if (glucemia) {
+                const g = parseInt(glucemia);
+                if (g < 70) alertas.push("⚠️ ¡ALERTA! Glucemia baja (< 70 mg/dL). Riesgo de hipoglucemia.");
+                if (g > 250) alertas.push("⚠️ ¡ALERTA! Glucemia alta (> 250 mg/dL).");
+            }
+            if (tensionPre.includes('/')) {
+                const partes = tensionPre.split('/');
+                const sis = parseInt(partes[0]);
+                const dias = parseInt(partes[1]);
+                if (sis > 140 || dias > 90) alertas.push("⚠️ ¡ALERTA! Tensión arterial alta (> 140/90 mmHg).");
+                if (sis < 90 || dias < 60) alertas.push("⚠️ ¡ALERTA! Tensión arterial baja (< 90/60 mmHg).");
+            }
+
+            if (alertas.length > 0) {
+                alert("Aviso de Control Clínico:\n\n" + alertas.join("\n") + "\n\nConsulte con su especialista médico.");
+            }
+
             let registros = JSON.parse(localStorage.getItem('registros_salud')) || [];
             registros.push({ 
                 fecha: new Date().toLocaleDateString(), 
+                edad,
+                peso,
                 pulsoPre, 
                 pulsoPost, 
                 tensionPre, 
@@ -468,6 +520,13 @@
                 options: commonOptions
             });
 
+            const ctxPeso = document.getElementById('graficaPeso').getContext('2d');
+            chartPesoInstance = new Chart(ctxPeso, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Peso Corporal (kg)', data: [], borderColor: '#f4a261', backgroundColor: '#f4a261', tension: 0.1, fill: false }]},
+                options: commonOptions
+            });
+
             const ctxAbdominal = document.getElementById('graficaAbdominal').getContext('2d');
             chartAbdominalInstance = new Chart(ctxAbdominal, {
                 type: 'line',
@@ -485,6 +544,11 @@
                 chartSaludInstance.data.datasets[0].data = reg.map(r => r.pulsoPre);
                 chartSaludInstance.data.datasets[1].data = reg.map(r => r.pulsoPost);
                 chartSaludInstance.update();
+            }
+            if (chartPesoInstance) {
+                chartPesoInstance.data.labels = reg.map(r => r.fecha);
+                chartPesoInstance.data.datasets[0].data = reg.map(r => r.peso);
+                chartPesoInstance.update();
             }
             if (chartAbdominalInstance) {
                 chartAbdominalInstance.data.labels = reg.map(r => r.fecha);
