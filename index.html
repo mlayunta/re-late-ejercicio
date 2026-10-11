@@ -25,7 +25,7 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
-            padding-bottom: 90px;
+            padding-bottom: 110px; /* Margen amplio para evitar que el menú tape el contenido */
         }
         header {
             background: linear-gradient(135deg, #1d3557, #457b9d);
@@ -56,14 +56,14 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-around;
             border-top: 1px solid #e2e8f0;
             padding: 10px 0;
             z-index: 1000;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
         }
         .nav-btn {
             background: none;
@@ -95,13 +95,14 @@
         .btn-secondary { background-color: var(--secondary); color: white; }
         .btn-danger { background-color: var(--danger); color: white; }
         
-        .exercise-card, .consejo-card, .stats-box, .home-card {
+        .exercise-card, .consejo-card, .stats-box, .home-card, .chart-card {
             background: var(--bg-card);
             padding: 20px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow: hidden;
         }
         .home-card {
             text-align: center;
@@ -160,22 +161,19 @@
         .grafico-actions {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        /* Contenedor sin fondo ni bordes para que la gráfica respire perfectamente */
-        .chart-container { 
+
+        /* Contenedor estricto para evitar encuadres cortados en móviles */
+        .chart-wrapper { 
             position: relative; 
-            height: 300px; 
             width: 100%;
-            margin-bottom: 30px;
-            background: transparent;
-            box-shadow: none;
-            border: none;
-            padding: 0;
+            height: 240px; 
         }
+
         .filter-buttons { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
         h2 { color: var(--primary); font-size: 20px; margin-top: 0; }
-        h3 { color: var(--secondary); font-size: 16px; margin-bottom: 15px; }
+        h3 { color: var(--secondary); font-size: 16px; margin-top: 0; margin-bottom: 15px; }
         #historial-sesiones { margin-top: 20px; }
         .historial-item {
             background: #f8fafc;
@@ -258,9 +256,11 @@
                 <button type="submit" class="btn-primary">Registrar Control de Salud</button>
             </form>
 
-            <div class="chart-container" style="margin-top: 30px;">
+            <div class="chart-card" style="margin-top: 25px;">
                 <h3>Evolución de Pulsaciones (Pre vs Post)</h3>
-                <canvas id="graficaSalud"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="graficaSalud"></canvas>
+                </div>
             </div>
         </section>
 
@@ -277,14 +277,18 @@
                 <button onclick="borrarDatos()" class="btn-danger" style="flex:1;">🗑️ Reiniciar</button>
             </div>
 
-            <div class="chart-container">
+            <div class="chart-card">
                 <h3>Minutos de Ejercicio por Sesión</h3>
-                <canvas id="graficaProgreso"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="graficaProgreso"></canvas>
+                </div>
             </div>
 
-            <div class="chart-container" style="margin-top: 20px;">
+            <div class="chart-card">
                 <h3>Evolución del Perímetro Abdominal (cm)</h3>
-                <canvas id="graficaAbdominal"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="graficaAbdominal"></canvas>
+                </div>
             </div>
 
             <div id="historial-sesiones"></div>
@@ -356,7 +360,7 @@
             document.getElementById(`tab-${nombreTab}`).classList.add('active');
             event.currentTarget.classList.add('active');
             if(nombreTab === 'progreso' || nombreTab === 'salud') {
-                setTimeout(() => actualizarGraficas(), 100);
+                setTimeout(() => actualizarGraficas(), 150);
             }
         }
 
@@ -437,7 +441,7 @@
             document.getElementById('barra-meta').value = totalMin;
 
             const historial = JSON.parse(localStorage.getItem('historial_ejercicios')) || [];
-            document.getElementById('historial-sesiones').innerHTML = "<h3>Historial Reciente</h3>" + 
+            document.getElementById('historial-sesiones').innerHTML = "<h3 style='margin-top:25px;'>Historial Reciente</h3>" + 
                 (historial.length === 0 ? "<p style='color: var(--text-muted); font-size:14px;'>Aún no hay sesiones registradas.</p>" : 
                 historial.map(s => `<div class="historial-item">✅ ${s.fecha} - <strong>${s.titulo}</strong> (${s.minutos} min)</div>`).join(''));
         }
@@ -445,7 +449,10 @@
         function inicializarGraficas() {
             const commonOptions = {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' }
+                }
             };
 
             const ctxSalud = document.getElementById('graficaSalud').getContext('2d');
