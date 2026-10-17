@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Re-Late · Salud cardiovascular">
+  <title>Re-Late · Nutrición Saludable</title>
+  <circle cx="256" cy="256" r="248" fill="#1d3557"/>
+  <rect x="118" y="150" width="276" height="18" rx="9" fill="#cfd8e3"/>
+  <rect x="92" y="122" width="26" height="74" rx="9" fill="#f4a261"/>
+  <rect x="394" y="122" width="26" height="74" rx="9" fill="#f4a261"/>
+  <g stroke="#e63946" stroke-width="30" stroke-linecap="round" fill="none">
+    <path d="M 200 255 C 165 228 135 196 130 162"/>
+    <path d="M 312 255 C 347 228 377 196 382 162"/>
+  </g>
+  <path d="M 256 440 C 140 360 105 295 135 245 C 162 202 224 205 256 250 C 288 205 350 202 377 245 C 407 295 372 360 256 440 Z" fill="#e63946"/>
+  <circle cx="130" cy="159" r="18" fill="#ff6b6b"/>
+  <circle cx="382" cy="159" r="18" fill="#ff6b6b"/>
+</svg>
