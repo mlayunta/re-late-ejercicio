@@ -1,0 +1,23 @@
+{
+  "name": "Re-Late Ejercicio Saludable",
+  "short_name": "Re-Late",
+  "description": "Ejercicio cardioprotegido, TM6M, zonas de FC y control de salud para rehabilitación cardíaca.",
+  "lang": "es",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef3f8",
+  "theme_color": "#1d3557",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Ejercicio", "url": "./index.html#ejercicio", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Salud", "url": "./index.html#salud", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Progreso", "url": "./index.html#progreso", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Alertas", "url": "./index.html#alertas", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+  ]
+}
